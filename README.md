@@ -1,18 +1,18 @@
 # CountyMaps
 interactive maps of US counties, showing 6 metrics, colour coded 
 
-library(formattable)
-library(tools)
-library(leaflet)
-library(rgdal)
-library(viridis)
+    library(formattable)
+    library(tools)
+    library(leaflet)
+    library(rgdal)
+    library(viridis)
 
 
 # assume data is loaded;  
-# "COUNTY_NAME"   "STATE_NAME"    "cat_ratio"     "cat_prem"      "non_cat_prem"  "total_prem"  
-# "loss_ratio"    "locations"     "premium_perc"  "location_perc"
-address = "C: ... /metrics.csv"
-dat <- read.csv(address, stringsAsFactors = FALSE)
+"COUNTY_NAME"   "STATE_NAME"    "cat_ratio"     "cat_prem"      "non_cat_prem"  "total_prem"  
+"loss_ratio"    "locations"     "premium_perc"  "location_perc"
+    address = "C: ... /metrics.csv"
+    dat <- read.csv(address, stringsAsFactors = FALSE)
 
 
 # Data files --------------------------------------------------------------
@@ -20,12 +20,12 @@ dat <- read.csv(address, stringsAsFactors = FALSE)
 
 # your data files
 # 1) shapefile from US gov site, counties 
-counties_dat <- readOGR("C:  ... /cb_2017_us_county_20m/cb_2017_us_county_20m.shp",
+    counties_dat <- readOGR("C:  ... /cb_2017_us_county_20m/cb_2017_us_county_20m.shp",
                         layer = "cb_2017_us_county_20m", 
                         GDAL1_integer64_policy = TRUE)
 
 # 2) FIPS codes for US counties and states
-fips <- read.csv("https://www2.census.gov/geo/docs/reference/codes/files/national_county.txt",
+    fips <- read.csv("https://www2.census.gov/geo/docs/reference/codes/files/national_county.txt",
                  header = FALSE, sep = ",",
                  col.names = c("stateabb", "statefp", "countyfp", "COUNTY_NAME", "classfp"))
 
@@ -36,50 +36,50 @@ fips <- read.csv("https://www2.census.gov/geo/docs/reference/codes/files/nationa
 # Any other fucntions that need defining 
 
 # Give back state abbreviation from name
-state2abbr <- function(state = "Texas") {
+    state2abbr <- function(state = "Texas") {
   
-  if(sum(state %in% state.name) > 0) {
-    sapply(state, function(i) {
+    if(sum(state %in% state.name) > 0) {
+      sapply(state, function(i) {
       
-      if(!is.na(i) & length(state.abb[state.name == i]) > 0) {
-        state.abb[state.name == i]
+        if(!is.na(i) & length(state.abb[state.name == i]) > 0) {
+          state.abb[state.name == i]
         
-      } else NA
-    }) 
+        } else NA
+      }) 
     
-  } else return(rep(NA, length(state)))
-}
+    } else return(rep(NA, length(state)))
+    }
 
 # Put County / State names into proper format (capital 1st letter)
-Capital1st <- function(x) {
-  tmp = sapply(x, function(j) strsplit(j, " "))
-  lapply(tmp, function(i) paste(toupper(substring(i, 1, 1)), substring(i, 2), sep = "", collapse = " "))
-}
+    Capital1st <- function(x) {
+    tmp = sapply(x, function(j) strsplit(j, " "))
+    lapply(tmp, function(i) paste(toupper(substring(i, 1, 1)), substring(i, 2), sep = "", collapse = " "))
+  }
 
 # Return string of specified length (adding zeros at start)
-makeXchars <- function(i, x = 3) {
+    makeXchars <- function(i, x = 3) {
   
-  makeXchars0 <- function(i, x = 3) {
-    if(nchar(i) == x) return(i)
-    if(nchar(i) > x) stop("WARNING: input greater than desired length !")
-    if(nchar(i) < x) {
-      tmp = paste0(rep(0, x - nchar(i)), collapse = "")
-      return(paste0(tmp, i, collapse = ""))
+    makeXchars0 <- function(i, x = 3) {
+      if(nchar(i) == x) return(i)
+      if(nchar(i) > x) stop("WARNING: input greater than desired length !")
+      if(nchar(i) < x) {
+        tmp = paste0(rep(0, x - nchar(i)), collapse = "")
+        return(paste0(tmp, i, collapse = ""))
+     }
     }
-  }
   
-  sapply(i, function(z) makeXchars0(z, x))
-}
+    sapply(i, function(z) makeXchars0(z, x))
+    }
 
 
 # Leaflet Map Function ----------------------------------------------------------------
 
 
 # New function
-county_map_produce <- function(data) {
+    county_map_produce <- function(data) {
   
   
-  tryCatch({
+    tryCatch({
     
     dat          <- dat[dat$STATE_NAME %in% c(state.name), ]
     dat$stateabb <- state2abbr(dat$STATE_NAME)
@@ -124,11 +124,10 @@ county_map_produce <- function(data) {
                      by.x = c("STATEFP", "COUNTYFP"), by.y = c("statefp", "countyfp"))
     
     map_dat$loss_ratio <- ifelse(map_dat$loss_ratio == Inf, NA, map_dat$loss_ratio)
-
-  county_map <- leaflet(map_dat) %>%
-  setView(-96, 37.8, 4) %>%
-  addProviderTiles("OpenStreetMap") %>% 
-  addPolygons(color = "White",
+    county_map <- leaflet(map_dat) %>%
+    setView(-96, 37.8, 4) %>%
+    addProviderTiles("OpenStreetMap") %>% 
+    addPolygons(color = "White",
               popup = map_dat$popup_dat,
               label = paste(map_dat$STATE_NAME, "," , map_dat$COUNTY_NAME),
               weight = 0.5, smoothFactor = 0.5,
@@ -137,7 +136,7 @@ county_map_produce <- function(data) {
                                         map_dat$loss_ratio)(map_dat$loss_ratio), n = 5,
               highlightOptions = highlightOptions(color = "white", weight = 4, bringToFront = TRUE),
               group = "Loss Ratio") %>%
-  addPolygons(color = "White",
+    addPolygons(color = "White",
               popup = map_dat$popup_dat,
               label = paste(map_dat$STATE_NAME, "," , map_dat$COUNTY_NAME),
               weight = 1, smoothFactor = 0.5,
@@ -145,8 +144,8 @@ county_map_produce <- function(data) {
               fillColor = colorQuantile(viridis_pal(option = "viridis")(2), 
                                         map_dat$cat_ratio)(map_dat$cat_ratio), n = 5,
               highlightOptions = highlightOptions(color = "white", weight = 4, bringToFront = TRUE),
-              group = "Cat Ratio") %>% 
-  addPolygons(color = "White",
+              group = "Cat Ratio") %>%
+    addPolygons(color = "White",
               popup = map_dat$popup_dat,
               label = paste(map_dat$STATE_NAME, "," , map_dat$COUNTY_NAME),
               weight = 1, smoothFactor = 0.5,
@@ -155,7 +154,7 @@ county_map_produce <- function(data) {
                                         map_dat$cat_prem)(map_dat$cat_prem), n = 5,
               highlightOptions = highlightOptions(color = "white", weight = 4, bringToFront = TRUE),
               group = "Cat Premium") %>% 
-  addPolygons(color = "White",
+    addPolygons(color = "White",
               popup = map_dat$popup_dat,
               label = paste(map_dat$STATE_NAME, "," , map_dat$COUNTY_NAME),
               weight = 1, smoothFactor = 0.5,
@@ -163,8 +162,7 @@ county_map_produce <- function(data) {
               fillColor = colorQuantile(viridis_pal(option = "viridis")(2), 
                                         map_dat$non_cat_prem)(map_dat$non_cat_prem), n = 5,
               highlightOptions = highlightOptions(color = "white", weight = 4, bringToFront = TRUE),
-              group = "Non Cat Premuim") %>% 
-  addPolygons(color = "White",
+              group = "Non Cat Premuim") %>% addPolygons(color = "White",
               popup = map_dat$popup_dat,
               label = paste(map_dat$STATE_NAME, "," , map_dat$COUNTY_NAME),
               weight = 1, smoothFactor = 0.5,
@@ -173,7 +171,7 @@ county_map_produce <- function(data) {
                                         map_dat$total_prem)(map_dat$total_prem), n = 5,
               highlightOptions = highlightOptions(color = "white", weight = 4, bringToFront = TRUE),
               group = "Total Premuim") %>% 
-  addPolygons(color = "White",
+    addPolygons(color = "White",
               popup = map_dat$popup_dat,
               label = paste(map_dat$STATE_NAME, "," , map_dat$COUNTY_NAME),
               weight = 1, smoothFactor = 0.5,
@@ -181,8 +179,8 @@ county_map_produce <- function(data) {
               fillColor = colorQuantile(viridis_pal(option = "viridis")(2), 
                                         map_dat$locations)(map_dat$locations), n = 5,
               highlightOptions = highlightOptions(color = "white", weight = 4, bringToFront = TRUE),
-              group = "No. Locations") %>% 
-addLayersControl(baseGroups = c("Loss Ratio", "Cat Ratio", 
+              group = "No. Locations") %>%
+    addLayersControl(baseGroups = c("Loss Ratio", "Cat Ratio", 
                                 "Cat Premium", "Non Cat Premium", "Total Premuim", 
                                 "No. Locations"),
                  options = layersControlOptions(collapsed = FALSE))
@@ -207,5 +205,5 @@ addLayersControl(baseGroups = c("Loss Ratio", "Cat Ratio",
 
 # Run map --------------------------------------------------------------------
 
-county_map_produce(dat)
+    county_map_produce(dat)
 
